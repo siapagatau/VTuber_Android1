@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sama dengan BgColor DTX (0xFF111113) agar tidak ada kilatan putih/hitam saat start. -->
+    <color name="vtuber_bg">#FF111113</color>
+    <color name="ic_launcher_background">#FF1C1C1E</color>
+</resources>

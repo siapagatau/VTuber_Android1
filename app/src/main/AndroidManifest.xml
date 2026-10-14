@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- CP1 hanya mendeklarasikan izin yang statusnya DIBACA UI. Izin lain (CAMERA, INTERNET,
+         FOREGROUND_SERVICE*, POST_NOTIFICATIONS) ditambahkan saat fiturnya dibuat (CP2/5/6/7). -->
+
+    <!-- Overlay floating (dipakai penuh di CP6). Dideklarasikan sekarang supaya status izin
+         di layar utama/pengaturan bisa dibaca dan halaman izin sistem bisa dibuka. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.VTuber">
+
+        <!-- Portrait: pemakaian satu tangan (standar DTX diadaptasi; DTX sendiri landscape). -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.VTuber">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

@@ -1,0 +1,66 @@
+name: Build Debug APK
+
+# Pola diambil dari DTX Kendang (build-apk.yml): runner ubuntu-latest sudah punya Android SDK,
+# jadi cukup memasang platform/build-tools 36 dan Gradle 9.3.1 (minimum untuk AGP 9.1.0).
+# CP1 tidak punya kode native -> NDK/CMake belum dipasang (dipasang di CP5 bila MediaPipe masuk).
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Add Android SDK cmdline-tools to PATH
+        run: echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
+
+      - name: Install platform & build-tools 36
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.3.1
+
+      - name: Unit tests + build debug APK
+        run: gradle testDebugUnitTest assembleDebug --stacktrace
+
+      # CP1 tidak boleh membawa .so. Bila nanti ada (MediaPipe, CP5), langkah ini GAGAL dulu
+      # sampai pengecekan alignment 16 KB (seperti DTX) ditambahkan - agar tidak lolos diam-diam.
+      - name: Guard - native libraries need 16 KB check
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          if unzip -l "$APK" | grep -q ' lib/'; then
+            echo "APK memuat library native: tambahkan cek 16 KB (lihat DTX build-apk.yml) sebelum lanjut."
+            unzip -l "$APK" | grep ' lib/'
+            exit 1
+          else
+            echo "Tidak ada library native di APK (CP1) - cek 16 KB belum relevan."
+          fi
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-vtuber-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
